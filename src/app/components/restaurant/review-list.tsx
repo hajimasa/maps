@@ -10,9 +10,6 @@ interface Review {
   comment: string | null
   created_at: string
   user_id: string
-  users?: {
-    display_name: string | null
-  }
 }
 
 interface ReviewListProps {
@@ -40,7 +37,6 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
         return
       }
 
-      // Fetch user display_name only (no avatar)
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -48,10 +44,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
           rating,
           comment,
           created_at,
-          user_id,
-          users!user_id (
-            display_name
-          )
+          user_id
         `)
         .eq('restaurant_id', restaurant.id)
         .order('created_at', { ascending: false })
@@ -113,15 +106,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
       <h3 className="text-lg font-semibold">レビュー ({reviews.length})</h3>
       {reviews.map((review) => (
         <div key={review.id} className="p-4 bg-white rounded-lg border">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-600">U</span>
-              </div>
-              <p className="font-medium">
-                {review.users?.display_name || '匿名ユーザー'}
-              </p>
-            </div>
+          <div className="flex items-center justify-end mb-3">
             <p className="text-sm text-gray-500">
               {formatDate(review.created_at)}
             </p>
