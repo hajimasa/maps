@@ -9,7 +9,8 @@ interface Review {
   rating: number
   comment: string | null
   created_at: string
-  user_profiles: {
+  user_id: string
+  user_profiles?: {
     display_name: string | null
     avatar_url: string | null
   }
@@ -40,6 +41,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
         return
       }
 
+      // Since users.id and user_profiles.id are the same, we can use user_id directly
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -47,7 +49,8 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
           rating,
           comment,
           created_at,
-          user_profiles!inner (
+          user_id,
+          user_profiles!user_id (
             display_name,
             avatar_url
           )
@@ -113,16 +116,20 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
       {reviews.map((review) => (
         <div key={review.id} className="p-4 bg-white rounded-lg border">
           <div className="flex items-center gap-3 mb-3">
-            {review.user_profiles?.avatar_url && (
+            {review.user_profiles?.avatar_url ? (
               <img
                 src={review.user_profiles.avatar_url}
                 alt="User avatar"
                 className="w-8 h-8 rounded-full"
               />
+            ) : (
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-gray-600">U</span>
+              </div>
             )}
             <div>
               <p className="font-medium">
-                {review.user_profiles?.display_name || 'Anonymous'}
+                {review.user_profiles?.display_name || '匿名ユーザー'}
               </p>
               <p className="text-sm text-gray-500">
                 {formatDate(review.created_at)}
