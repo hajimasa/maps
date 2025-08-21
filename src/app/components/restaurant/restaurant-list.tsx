@@ -236,7 +236,7 @@ export function RestaurantList() {
       ) : (
         <div className="space-y-3">
           {sortedRestaurants.map((restaurant) => (
-            <div key={restaurant.place_id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={restaurant.place_id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedRestaurant(restaurant)}>
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="font-medium text-lg text-gray-900">{restaurant.name}</h3>
@@ -257,13 +257,8 @@ export function RestaurantList() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => setSelectedRestaurant(restaurant)}
-                    className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation()
                       console.log('Toggling favorite for:', restaurant.place_id)
                       console.log('Current favorites set:', Array.from(favorites))
                       console.log('Is favorited:', favorites.has(restaurant.place_id))
@@ -293,7 +288,7 @@ export function RestaurantList() {
                   <h2 className="text-xl font-bold text-gray-900">{selectedRestaurant.name}</h2>
                   <p className="text-gray-600">{selectedRestaurant.vicinity}</p>
                   {selectedRestaurant.rating && (
-                    <div className="flex items-center mt-2">
+                    <div className="flex items-center mt-2 text-gray-900">
                       <Star className="h-4 w-4 text-yellow-500 mr-1" />
                       <span>{selectedRestaurant.rating.toFixed(1)}</span>
                     </div>
