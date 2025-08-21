@@ -199,7 +199,7 @@ export function RestaurantList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">レストラン一覧</h2>
+        <h2 className="text-lg font-semibold text-gray-900">レストラン一覧</h2>
         <button
           onClick={getUserLocation}
           disabled={gettingLocation}
@@ -239,7 +239,7 @@ export function RestaurantList() {
             <div key={restaurant.place_id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="font-medium text-lg">{restaurant.name}</h3>
+                  <h3 className="font-medium text-lg text-gray-900">{restaurant.name}</h3>
                   {restaurant.vicinity && (
                     <p className="text-gray-600 text-sm mt-1">{restaurant.vicinity}</p>
                   )}
@@ -290,7 +290,7 @@ export function RestaurantList() {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h2 className="text-xl font-bold">{selectedRestaurant.name}</h2>
+                  <h2 className="text-xl font-bold text-gray-900">{selectedRestaurant.name}</h2>
                   <p className="text-gray-600">{selectedRestaurant.vicinity}</p>
                   {selectedRestaurant.rating && (
                     <div className="flex items-center mt-2">
