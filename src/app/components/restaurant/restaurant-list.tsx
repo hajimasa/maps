@@ -1,30 +1,50 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapPin, Navigation, Loader2 } from 'lucide-react'
+import { MapPin, Navigation, Loader2, Star, Heart, MessageSquare } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { getCurrentLocation, sortRestaurantsByDistance, formatDistance, type Location, type Restaurant } from '../../lib/geolocation'
+import { searchNearbyRestaurants, convertGooglePlaceToRestaurant, type GooglePlaceRestaurant } from '../../lib/google-maps'
+import { ReviewForm } from './review-form'
+import { ReviewList } from './review-list'
 
 export function RestaurantList() {
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
+  const [restaurants, setRestaurants] = useState<GooglePlaceRestaurant[]>([])
   const [userLocation, setUserLocation] = useState<Location | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [gettingLocation, setGettingLocation] = useState(false)
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [user, setUser] = useState<any>(null)
+  const [selectedRestaurant, setSelectedRestaurant] = useState<GooglePlaceRestaurant | null>(null)
+  const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0)
 
-  const loadRestaurants = async () => {
+  const loadRestaurants = async (location: Location) => {
+    setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('restaurants')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setRestaurants(data || [])
+      const places = await searchNearbyRestaurants(location)
+      setRestaurants(places)
     } catch (error) {
       console.error('Error loading restaurants:', error)
+      setLocationError('レストランの検索中にエラーが発生しました。')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadFavorites = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('restaurant_id')
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      setFavorites(new Set(data.map(fav => fav.restaurant_id)))
+    } catch (error) {
+      console.error('Error loading favorites:', error)
     }
   }
 
@@ -35,6 +55,7 @@ export function RestaurantList() {
     try {
       const location = await getCurrentLocation()
       setUserLocation(location)
+      await loadRestaurants(location)
     } catch (error) {
       console.error('Error getting location:', error)
       setLocationError('位置情報を取得できませんでした。ブラウザの設定を確認してください。')
@@ -43,13 +64,80 @@ export function RestaurantList() {
     }
   }
 
+  const toggleFavorite = async (placeId: string) => {
+    if (!user) {
+      alert('お気に入りに追加するにはログインが必要です。')
+      return
+    }
+
+    try {
+      const restaurant = restaurants.find(r => r.place_id === placeId)
+      if (!restaurant) return
+
+      if (favorites.has(placeId)) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('restaurant_id', placeId)
+
+        if (error) throw error
+        setFavorites(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(placeId)
+          return newSet
+        })
+      } else {
+        const restaurantData = convertGooglePlaceToRestaurant(restaurant)
+        
+        const { error: insertRestaurantError } = await supabase
+          .from('restaurants')
+          .upsert({
+            ...restaurantData,
+            id: placeId
+          })
+
+        if (insertRestaurantError) throw insertRestaurantError
+
+        const { error: insertFavoriteError } = await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            restaurant_id: placeId
+          })
+
+        if (insertFavoriteError) throw insertFavoriteError
+        setFavorites(prev => new Set(prev).add(placeId))
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      alert('お気に入りの更新中にエラーが発生しました。')
+    }
+  }
+
   useEffect(() => {
-    loadRestaurants()
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null)
+      }
+    )
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const sortedRestaurants = userLocation 
-    ? sortRestaurantsByDistance(restaurants, userLocation)
-    : restaurants
+  useEffect(() => {
+    if (user) {
+      loadFavorites()
+    }
+  }, [user])
+
+  const sortedRestaurants = restaurants
 
   if (loading) {
     return (
@@ -95,36 +183,93 @@ export function RestaurantList() {
 
       {sortedRestaurants.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500">登録されたレストランがありません。</p>
+          <p className="text-gray-500">「現在地から探す」ボタンを押してレストランを検索してください。</p>
         </div>
       ) : (
         <div className="space-y-3">
           {sortedRestaurants.map((restaurant) => (
-            <div key={restaurant.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={restaurant.place_id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="font-medium text-lg">{restaurant.name}</h3>
-                  {restaurant.address && (
-                    <p className="text-gray-600 text-sm mt-1">{restaurant.address}</p>
+                  {restaurant.vicinity && (
+                    <p className="text-gray-600 text-sm mt-1">{restaurant.vicinity}</p>
                   )}
                   <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                    {restaurant.category && (
-                      <span>カテゴリ: {restaurant.category}</span>
+                    {restaurant.rating && (
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                        <span>{restaurant.rating.toFixed(1)}</span>
+                      </div>
                     )}
-                    {restaurant.price_range && (
-                      <span>価格帯: {'¥'.repeat(restaurant.price_range)}</span>
+                    {restaurant.price_level && (
+                      <span>価格帯: {'¥'.repeat(restaurant.price_level)}</span>
                     )}
                   </div>
                 </div>
-                {restaurant.distance !== undefined && (
-                  <div className="flex items-center text-blue-600 text-sm font-medium">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    {formatDistance(restaurant.distance)}
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setSelectedRestaurant(restaurant)}
+                    className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => toggleFavorite(restaurant.place_id)}
+                    className={`p-2 rounded-full transition-colors ${
+                      favorites.has(restaurant.place_id)
+                        ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Heart className={`h-4 w-4 ${favorites.has(restaurant.place_id) ? 'fill-current' : ''}`} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {selectedRestaurant && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-xl font-bold">{selectedRestaurant.name}</h2>
+                  <p className="text-gray-600">{selectedRestaurant.vicinity}</p>
+                  {selectedRestaurant.rating && (
+                    <div className="flex items-center mt-2">
+                      <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                      <span>{selectedRestaurant.rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => setSelectedRestaurant(null)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <ReviewForm
+                  restaurantId={selectedRestaurant.place_id}
+                  onReviewSubmitted={() => {
+                    setReviewRefreshTrigger(prev => prev + 1)
+                    toggleFavorite(selectedRestaurant.place_id)
+                  }}
+                />
+                
+                <ReviewList
+                  restaurantId={selectedRestaurant.place_id}
+                  refreshTrigger={reviewRefreshTrigger}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
