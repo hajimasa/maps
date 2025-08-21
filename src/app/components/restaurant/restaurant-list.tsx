@@ -93,9 +93,8 @@ export function RestaurantList() {
         
         const { error: insertRestaurantError } = await supabase
           .from('restaurants')
-          .upsert({
-            ...restaurantData,
-            id: placeId
+          .upsert(restaurantData, {
+            onConflict: 'google_place_id'
           })
 
         if (insertRestaurantError) throw insertRestaurantError
