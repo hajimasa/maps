@@ -20,7 +20,33 @@ export function RestaurantList() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<GooglePlaceRestaurant | null>(null)
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0)
 
-  const loadRestaurants = async (location: Location) => {
+  const loadFavorites = useCallback(async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+          restaurants!inner(google_place_id)
+        `)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      
+      console.log('Raw favorites data:', data)
+      
+      const placeIds = data
+        .map(fav => fav.restaurants?.google_place_id)
+        .filter(Boolean) as string[]
+      
+      console.log('Processed place IDs:', placeIds)
+      setFavorites(new Set(placeIds))
+    } catch (error) {
+      console.error('Error loading favorites:', error)
+    }
+  }, [user])
+
+  const loadRestaurants = useCallback(async (location: Location) => {
     setLoading(true)
     try {
       const places = await searchNearbyRestaurants(location)
@@ -31,38 +57,9 @@ export function RestaurantList() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const loadFavorites = useCallback(async () => {
-    if (!user) return
-    
-    try {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('restaurant_id, restaurants!inner(google_place_id)')
-        .eq('user_id', user.id)
-
-      if (error) throw error
-      
-      console.log('Raw favorites data:', data)
-      
-      const placeIds = data
-        .map(fav => {
-          if (fav.restaurants && Array.isArray(fav.restaurants) && fav.restaurants.length > 0) {
-            return fav.restaurants[0].google_place_id
-          }
-          return null
-        })
-        .filter(Boolean) as string[]
-      
-      console.log('Processed place IDs:', placeIds)
-      setFavorites(new Set(placeIds))
-    } catch (error) {
-      console.error('Error loading favorites:', error)
-    }
-  }, [user])
-
-  const getUserLocation = async () => {
+  const getUserLocation = useCallback(async () => {
     setGettingLocation(true)
     setLocationError(null)
     
@@ -76,7 +73,7 @@ export function RestaurantList() {
     } finally {
       setGettingLocation(false)
     }
-  }
+  }, [loadRestaurants])
 
   const toggleFavorite = async (placeId: string) => {
     if (!user) {
@@ -180,6 +177,11 @@ export function RestaurantList() {
       loadFavorites()
     }
   }, [user, loadFavorites])
+
+  // Auto-fetch location and restaurants on component mount
+  useEffect(() => {
+    getUserLocation()
+  }, [getUserLocation])
 
   const sortedRestaurants = restaurants
 
