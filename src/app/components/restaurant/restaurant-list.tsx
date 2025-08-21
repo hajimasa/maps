@@ -39,13 +39,21 @@ export function RestaurantList() {
     try {
       const { data, error } = await supabase
         .from('favorites')
-        .select(`
-          restaurants!inner(google_place_id)
-        `)
+        .select('restaurant_id, restaurants!inner(google_place_id)')
         .eq('user_id', user.id)
 
       if (error) throw error
-      setFavorites(new Set(data.map((fav: any) => fav.restaurants.google_place_id)))
+      
+      const placeIds = data
+        .map(fav => {
+          if (fav.restaurants && Array.isArray(fav.restaurants) && fav.restaurants.length > 0) {
+            return fav.restaurants[0].google_place_id
+          }
+          return null
+        })
+        .filter(Boolean) as string[]
+      
+      setFavorites(new Set(placeIds))
     } catch (error) {
       console.error('Error loading favorites:', error)
     }
