@@ -10,6 +10,10 @@ interface Review {
   comment: string | null
   created_at: string
   user_id: string
+  user_profiles: {
+    display_name: string
+    avatar_url: string | null
+  }
 }
 
 interface ReviewListProps {
@@ -44,7 +48,11 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
           rating,
           comment,
           created_at,
-          user_id
+          user_id,
+          user_profiles!inner(
+            display_name,
+            avatar_url
+          )
         `)
         .eq('restaurant_id', restaurant.id)
         .order('created_at', { ascending: false })
@@ -106,7 +114,25 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
       <h3 className="text-lg font-semibold">レビュー ({reviews.length})</h3>
       {reviews.map((review) => (
         <div key={review.id} className="p-4 bg-white rounded-lg border">
-          <div className="flex items-center justify-end mb-3">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              {review.user_profiles.avatar_url ? (
+                <img 
+                  src={review.user_profiles.avatar_url} 
+                  alt={review.user_profiles.display_name}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span className="text-gray-600 text-sm font-medium">
+                    {review.user_profiles.display_name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <span className="font-medium text-gray-900">
+                {review.user_profiles.display_name}
+              </span>
+            </div>
             <p className="text-sm text-gray-500">
               {formatDate(review.created_at)}
             </p>
