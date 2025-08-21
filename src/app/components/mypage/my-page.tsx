@@ -33,7 +33,7 @@ interface ReviewedRestaurant {
     category: string
     price_range: number | null
     google_place_id: string
-  }[]
+  }
 }
 
 export function MyPage() {
@@ -234,7 +234,7 @@ export function MyPage() {
           ) : (
             <div className="grid gap-4">
               {reviews.map((review) => {
-                const restaurant = review.restaurants[0] // Take first restaurant from array
+                const restaurant = review.restaurants
                 return (
                   <div key={review.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-3">
