@@ -24,7 +24,7 @@ export default function App() {
         </div>
 
         <div className="mt-8 bg-blue-50 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-2">機能説明</h2>
+          <h2 className="text-lg font-semibold mb-2 text-gray-900">機能説明</h2>
           <ul className="space-y-2 text-sm text-gray-700">
             <li>• 「現在地から探す」ボタンで位置情報を取得し、Google Maps APIから周辺のレストランを検索表示します</li>
             <li>• Googleアカウントでログインして店舗をお気に入りに追加できます</li>

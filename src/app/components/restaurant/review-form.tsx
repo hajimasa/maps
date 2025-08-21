@@ -155,7 +155,7 @@ export function ReviewForm({ restaurantId, restaurantData, onReviewSubmitted }: 
           onChange={(e) => setComment(e.target.value)}
           placeholder="このお店についてのコメントを書いてください..."
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
         />
       </div>
 
