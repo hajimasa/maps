@@ -27,6 +27,19 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
   const fetchReviews = useCallback(async () => {
     setLoading(true)
     try {
+      // First, get the restaurant's actual ID from Google Place ID
+      const { data: restaurant, error: restaurantError } = await supabase
+        .from('restaurants')
+        .select('id')
+        .eq('google_place_id', restaurantId)
+        .single()
+
+      if (restaurantError) {
+        console.error('Restaurant not found for reviews:', restaurantError)
+        setReviews([])
+        return
+      }
+
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -39,7 +52,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
             avatar_url
           )
         `)
-        .eq('restaurant_id', restaurantId)
+        .eq('restaurant_id', restaurant.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error

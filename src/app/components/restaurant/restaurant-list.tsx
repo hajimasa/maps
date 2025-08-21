@@ -313,9 +313,9 @@ export function RestaurantList() {
               <div className="space-y-6">
                 <ReviewForm
                   restaurantId={selectedRestaurant.place_id}
+                  restaurantData={selectedRestaurant}
                   onReviewSubmitted={() => {
                     setReviewRefreshTrigger(prev => prev + 1)
-                    toggleFavorite(selectedRestaurant.place_id)
                   }}
                 />
                 

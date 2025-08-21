@@ -4,13 +4,15 @@ import { supabase } from '@/app/lib/supabase'
 import { Star, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
+import { convertGooglePlaceToRestaurant, type GooglePlaceRestaurant } from '@/app/lib/google-maps'
 
 interface ReviewFormProps {
   restaurantId: string
+  restaurantData?: GooglePlaceRestaurant
   onReviewSubmitted?: () => void
 }
 
-export function ReviewForm({ restaurantId, onReviewSubmitted }: ReviewFormProps) {
+export function ReviewForm({ restaurantId, restaurantData, onReviewSubmitted }: ReviewFormProps) {
   const [user, setUser] = useState<User | null>(null)
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
@@ -47,10 +49,44 @@ export function ReviewForm({ restaurantId, onReviewSubmitted }: ReviewFormProps)
     setLoading(true)
 
     try {
+      // First, ensure the restaurant exists in our database
+      // restaurantId is actually a Google Place ID, so we need to get the actual restaurant record
+      let restaurant
+      const { data: existingRestaurant, error: restaurantError } = await supabase
+        .from('restaurants')
+        .select('id')
+        .eq('google_place_id', restaurantId)
+        .single()
+
+      if (restaurantError) {
+        // Restaurant doesn't exist, we need to create it first
+        if (!restaurantData) {
+          throw new Error('レストラン情報が不足しています。')
+        }
+
+        console.log('Restaurant not found, creating it first')
+        const newRestaurantData = convertGooglePlaceToRestaurant(restaurantData)
+        
+        const { data: insertedRestaurant, error: insertError } = await supabase
+          .from('restaurants')
+          .insert(newRestaurantData)
+          .select('id')
+          .single()
+
+        if (insertError) {
+          console.error('Error inserting restaurant:', insertError)
+          throw new Error('レストラン情報の登録に失敗しました。')
+        }
+
+        restaurant = insertedRestaurant
+      } else {
+        restaurant = existingRestaurant
+      }
+
       const { error } = await supabase
         .from('reviews')
         .insert({
-          restaurant_id: restaurantId,
+          restaurant_id: restaurant.id,
           user_id: user.id,
           rating,
           comment: comment.trim() || null,
