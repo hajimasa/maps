@@ -9,6 +9,26 @@ import { searchNearbyRestaurants, convertGooglePlaceToRestaurant, type GooglePla
 import { ReviewForm } from './review-form'
 import { ReviewList } from './review-list'
 
+// 2点間の距離を計算する関数（km）
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371 // 地球の半径（km）
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c
+}
+
+// 距離を徒歩時間に変換する関数（分）
+function distanceToWalkingTime(distanceKm: number): number {
+  const walkingSpeedKmh = 4.8 // 平均歩行速度 4.8km/h
+  const timeHours = distanceKm / walkingSpeedKmh
+  return Math.round(timeHours * 60)
+}
+
 export function RestaurantList() {
   const [restaurants, setRestaurants] = useState<GooglePlaceRestaurant[]>([])
   const [userLocation, setUserLocation] = useState<Location | null>(null)
@@ -19,6 +39,8 @@ export function RestaurantList() {
   const [user, setUser] = useState<User | null>(null)
   const [selectedRestaurant, setSelectedRestaurant] = useState<GooglePlaceRestaurant | null>(null)
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0)
+  const [filterOpenNow, setFilterOpenNow] = useState(false)
+  const [filterHighRating, setFilterHighRating] = useState(false)
 
   const loadFavorites = useCallback(async () => {
     if (!user) return
@@ -185,7 +207,19 @@ export function RestaurantList() {
     getUserLocation()
   }, [getUserLocation])
 
-  const sortedRestaurants = restaurants
+  const sortedRestaurants = restaurants.filter(restaurant => {
+    // 営業中フィルター
+    if (filterOpenNow && restaurant.opening_hours?.open_now !== true) {
+      return false
+    }
+    
+    // 高評価フィルター（4.0以上）
+    if (filterHighRating && (!restaurant.rating || restaurant.rating < 4.0)) {
+      return false
+    }
+    
+    return true
+  })
 
   if (loading) {
     return (
@@ -224,14 +258,44 @@ export function RestaurantList() {
         <div className="bg-green-50 border border-green-200 rounded-lg p-3">
           <p className="text-green-700 text-sm flex items-center">
             <MapPin className="h-4 w-4 mr-1" />
-            現在地を取得しました。距離順に表示されています。
+            現在地を取得しました。おすすめ順に表示されています。
           </p>
+        </div>
+      )}
+
+      {restaurants.length > 0 && (
+        <div className="bg-white border rounded-lg p-4">
+          <h3 className="text-sm font-medium text-gray-900 mb-3">絞り込み</h3>
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={filterOpenNow}
+                onChange={(e) => setFilterOpenNow(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span className="ml-2 text-sm text-gray-700">営業中のみ表示</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={filterHighRating}
+                onChange={(e) => setFilterHighRating(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span className="ml-2 text-sm text-gray-700">評価4.0以上のみ表示</span>
+            </label>
+          </div>
         </div>
       )}
 
       {sortedRestaurants.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500">「現在地から探す」ボタンを押してレストランを検索してください。</p>
+          {restaurants.length === 0 ? (
+            <p className="text-gray-500">「現在地から探す」ボタンを押してレストランを検索してください。</p>
+          ) : (
+            <p className="text-gray-500">絞り込み条件に該当するレストランがありません。</p>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
@@ -250,6 +314,18 @@ export function RestaurantList() {
                         <span>{restaurant.rating.toFixed(1)}</span>
                         <span className="ml-1 text-xs text-gray-400">(Google)</span>
                       </div>
+                    )}
+                    {userLocation && (
+                      <span className="text-blue-600">
+                        徒歩{distanceToWalkingTime(
+                          calculateDistance(
+                            userLocation.latitude,
+                            userLocation.longitude,
+                            restaurant.geometry.location.lat,
+                            restaurant.geometry.location.lng
+                          )
+                        )}分
+                      </span>
                     )}
                     {restaurant.opening_hours?.open_now !== undefined && (
                       <span className={`px-2 py-1 rounded text-xs ${
