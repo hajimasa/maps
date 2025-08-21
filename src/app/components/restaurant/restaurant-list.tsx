@@ -103,7 +103,8 @@ export function RestaurantList() {
           .from('favorites')
           .insert({
             user_id: user.id,
-            restaurant_id: placeId
+            restaurant_id: placeId,
+            created_at: new Date().toISOString()
           })
 
         if (insertFavoriteError) throw insertFavoriteError

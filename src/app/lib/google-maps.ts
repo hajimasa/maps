@@ -100,6 +100,7 @@ export function convertGooglePlaceToRestaurant(place: GooglePlaceRestaurant) {
     price_range: place.price_level || null,
     phone: place.formatted_phone_number || null,
     website: place.website || null,
-    google_place_id: place.place_id
+    google_place_id: place.place_id,
+    created_at: new Date().toISOString()
   }
 }

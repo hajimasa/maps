@@ -54,6 +54,7 @@ export function ReviewForm({ restaurantId, onReviewSubmitted }: ReviewFormProps)
           user_id: user.id,
           rating,
           comment: comment.trim() || null,
+          created_at: new Date().toISOString()
         })
 
       if (error) throw error
