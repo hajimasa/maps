@@ -36,7 +36,12 @@ export function RestaurantList() {
       console.log('Raw favorites data:', data)
       
       const placeIds = data
-        .map(fav => fav.restaurants?.google_place_id)
+        .map((fav: { restaurants: { google_place_id: string }[] | { google_place_id: string } }) => {
+          if (Array.isArray(fav.restaurants)) {
+            return fav.restaurants[0]?.google_place_id
+          }
+          return fav.restaurants?.google_place_id
+        })
         .filter(Boolean) as string[]
       
       console.log('Processed place IDs:', placeIds)
