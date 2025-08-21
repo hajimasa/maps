@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { MapPin, Navigation, Loader2, Star, Heart, MessageSquare } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
-import { getCurrentLocation, sortRestaurantsByDistance, formatDistance, type Location, type Restaurant } from '../../lib/geolocation'
+import type { User } from '@supabase/supabase-js'
+import { getCurrentLocation, type Location } from '../../lib/geolocation'
 import { searchNearbyRestaurants, convertGooglePlaceToRestaurant, type GooglePlaceRestaurant } from '../../lib/google-maps'
 import { ReviewForm } from './review-form'
 import { ReviewList } from './review-list'
@@ -15,7 +16,7 @@ export function RestaurantList() {
   const [locationError, setLocationError] = useState<string | null>(null)
   const [gettingLocation, setGettingLocation] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [selectedRestaurant, setSelectedRestaurant] = useState<GooglePlaceRestaurant | null>(null)
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0)
 
@@ -32,7 +33,7 @@ export function RestaurantList() {
     }
   }
 
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
     if (!user) return
     
     try {
@@ -46,7 +47,7 @@ export function RestaurantList() {
     } catch (error) {
       console.error('Error loading favorites:', error)
     }
-  }
+  }, [user])
 
   const getUserLocation = async () => {
     setGettingLocation(true)
@@ -135,7 +136,7 @@ export function RestaurantList() {
     if (user) {
       loadFavorites()
     }
-  }, [user])
+  }, [user, loadFavorites])
 
   const sortedRestaurants = restaurants
 
