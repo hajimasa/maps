@@ -117,7 +117,7 @@ export function ReviewForm({ restaurantId, restaurantData, onReviewSubmitted }: 
 
   return (
     <form onSubmit={submitReview} className="space-y-4 p-4 bg-white rounded-lg border">
-      <h3 className="text-lg font-semibold">レビューを投稿</h3>
+      <h3 className="text-lg font-semibold text-gray-900">レビューを投稿</h3>
       
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">

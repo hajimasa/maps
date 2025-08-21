@@ -111,7 +111,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">レビュー ({reviews.length})</h3>
+      <h3 className="text-lg font-semibold text-gray-900">レビュー ({reviews.length})</h3>
       {reviews.map((review) => (
         <div key={review.id} className="p-4 bg-white rounded-lg border">
           <div className="flex items-center justify-between mb-3">
