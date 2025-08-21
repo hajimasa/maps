@@ -44,6 +44,8 @@ export function RestaurantList() {
 
       if (error) throw error
       
+      console.log('Raw favorites data:', data)
+      
       const placeIds = data
         .map(fav => {
           if (fav.restaurants && Array.isArray(fav.restaurants) && fav.restaurants.length > 0) {
@@ -53,6 +55,7 @@ export function RestaurantList() {
         })
         .filter(Boolean) as string[]
       
+      console.log('Processed place IDs:', placeIds)
       setFavorites(new Set(placeIds))
     } catch (error) {
       console.error('Error loading favorites:', error)
@@ -256,7 +259,12 @@ export function RestaurantList() {
                     <MessageSquare className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => toggleFavorite(restaurant.place_id)}
+                    onClick={() => {
+                      console.log('Toggling favorite for:', restaurant.place_id)
+                      console.log('Current favorites set:', Array.from(favorites))
+                      console.log('Is favorited:', favorites.has(restaurant.place_id))
+                      toggleFavorite(restaurant.place_id)
+                    }}
                     className={`p-2 rounded-full transition-colors ${
                       favorites.has(restaurant.place_id)
                         ? 'bg-red-100 text-red-600 hover:bg-red-200'
