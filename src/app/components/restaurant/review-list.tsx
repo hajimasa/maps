@@ -50,7 +50,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
           comment,
           created_at,
           user_id,
-          user_profiles!user_id (
+          user_profiles!id (
             display_name,
             avatar_url
           )
