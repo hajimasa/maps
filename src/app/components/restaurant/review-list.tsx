@@ -10,9 +10,11 @@ interface Review {
   comment: string | null
   created_at: string
   user_id: string
-  user_profiles?: {
-    display_name: string | null
-    avatar_url: string | null
+  users?: {
+    user_profiles?: {
+      display_name: string | null
+      avatar_url: string | null
+    }
   }
 }
 
@@ -50,9 +52,11 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
           comment,
           created_at,
           user_id,
-          user_profiles!id (
-            display_name,
-            avatar_url
+          users!user_id (
+            user_profiles (
+              display_name,
+              avatar_url
+            )
           )
         `)
         .eq('restaurant_id', restaurant.id)
@@ -116,9 +120,9 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
       {reviews.map((review) => (
         <div key={review.id} className="p-4 bg-white rounded-lg border">
           <div className="flex items-center gap-3 mb-3">
-            {review.user_profiles?.avatar_url ? (
+            {review.users?.user_profiles?.avatar_url ? (
               <img
-                src={review.user_profiles.avatar_url}
+                src={review.users.user_profiles.avatar_url}
                 alt="User avatar"
                 className="w-8 h-8 rounded-full"
               />
@@ -129,7 +133,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
             )}
             <div>
               <p className="font-medium">
-                {review.user_profiles?.display_name || '匿名ユーザー'}
+                {review.users?.user_profiles?.display_name || '匿名ユーザー'}
               </p>
               <p className="text-sm text-gray-500">
                 {formatDate(review.created_at)}
