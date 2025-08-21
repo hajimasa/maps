@@ -109,18 +109,18 @@ export function ReviewForm({ restaurantId, restaurantData, onReviewSubmitted }: 
 
   if (!user) {
     return (
-      <div className="p-4 bg-gray-50 rounded-lg text-center">
-        <p className="text-gray-600">レビューを投稿するにはログインが必要です</p>
+      <div className="p-6 bg-gray-50 rounded-lg text-center border border-gray-200">
+        <p className="text-gray-700 font-medium">🔑 レビューを投稿するにはログインが必要です</p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={submitReview} className="space-y-4 p-4 bg-white rounded-lg border">
-      <h3 className="text-lg font-semibold text-gray-900">レビューを投稿</h3>
+    <form onSubmit={submitReview} className="space-y-6 p-6 bg-white rounded-lg border border-gray-200">
+      <h3 className="text-xl font-bold text-gray-900">✍️ レビューを投稿</h3>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-bold text-gray-900 mb-3">
           評価
         </label>
         <div className="flex gap-1">
@@ -147,7 +147,7 @@ export function ReviewForm({ restaurantId, restaurantData, onReviewSubmitted }: 
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-bold text-gray-900 mb-3">
           コメント（任意）
         </label>
         <textarea
@@ -155,14 +155,14 @@ export function ReviewForm({ restaurantId, restaurantData, onReviewSubmitted }: 
           onChange={(e) => setComment(e.target.value)}
           placeholder="このお店についてのコメントを書いてください..."
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-gray-900 bg-white"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading || rating === 0}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center gap-3 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
       >
         <Send size={16} />
         {loading ? '投稿中...' : '投稿する'}

@@ -111,25 +111,25 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">レビュー ({reviews.length})</h3>
+      <h3 className="text-xl font-bold text-gray-900 mb-4">📝 レビュー ({reviews.length})</h3>
       {reviews.map((review) => (
-        <div key={review.id} className="p-4 bg-white rounded-lg border">
+        <div key={review.id} className="p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               {review.user_profiles.avatar_url ? (
                 <img 
                   src={review.user_profiles.avatar_url} 
                   alt={review.user_profiles.display_name}
-                  className="w-8 h-8 rounded-full object-cover"
+                  className="w-10 h-10 rounded-full object-cover border border-gray-300"
                 />
               ) : (
-                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                  <span className="text-gray-600 text-sm font-medium">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
                     {review.user_profiles.display_name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
-              <span className="font-medium text-gray-900">
+              <span className="font-bold text-gray-900 text-lg">
                 {review.user_profiles.display_name}
               </span>
             </div>

@@ -232,30 +232,18 @@ export function RestaurantList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">レストラン一覧</h2>
-        <button
-          onClick={getUserLocation}
-          disabled={gettingLocation}
-          className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-        >
-          {gettingLocation ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <Navigation className="h-4 w-4 mr-2" />
-          )}
-          {userLocation ? '位置情報を更新' : '現在地から探す'}
-        </button>
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">🍽️ レストラン一覧</h2>
       </div>
 
       {locationError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-700 text-sm">{locationError}</p>
         </div>
       )}
 
       {userLocation && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+        <div className="bg-green-50 border border-green-300 rounded-lg p-4">
           <p className="text-green-700 text-sm flex items-center">
             <MapPin className="h-4 w-4 mr-1" />
             現在地を取得しました。おすすめ順に表示されています。
@@ -264,26 +252,26 @@ export function RestaurantList() {
       )}
 
       {restaurants.length > 0 && (
-        <div className="bg-white border rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-900 mb-3">絞り込み</h3>
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">🔍 絞り込み</h3>
           <div className="space-y-2">
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filterOpenNow}
                 onChange={(e) => setFilterOpenNow(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded accent-blue-600"
               />
-              <span className="ml-2 text-sm text-gray-700">営業中のみ表示</span>
+              <span className="ml-3 text-sm font-medium text-gray-800">🕑 営業中のみ表示</span>
             </label>
             <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={filterHighRating}
                 onChange={(e) => setFilterHighRating(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded accent-blue-600"
               />
-              <span className="ml-2 text-sm text-gray-700">評価4.0以上のみ表示</span>
+              <span className="ml-3 text-sm font-medium text-gray-800">⭐ 評価4.0以上のみ表示</span>
             </label>
           </div>
         </div>
@@ -300,14 +288,14 @@ export function RestaurantList() {
       ) : (
         <div className="space-y-3">
           {sortedRestaurants.map((restaurant) => (
-            <div key={restaurant.place_id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedRestaurant(restaurant)}>
+            <div key={restaurant.place_id} className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors cursor-pointer" onClick={() => setSelectedRestaurant(restaurant)}>
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="font-medium text-lg text-gray-900">{restaurant.name}</h3>
+                  <h3 className="font-bold text-xl text-gray-900 mb-1">{restaurant.name}</h3>
                   {restaurant.vicinity && (
                     <p className="text-gray-600 text-sm mt-1">{restaurant.vicinity}</p>
                   )}
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-sm text-gray-500">
                     {restaurant.rating && (
                       <div className="flex items-center">
                         <Star className="h-4 w-4 text-yellow-500 mr-1" />
@@ -316,8 +304,8 @@ export function RestaurantList() {
                       </div>
                     )}
                     {userLocation && (
-                      <span className="text-blue-600">
-                        徒歩{distanceToWalkingTime(
+                      <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-semibold inline-block w-fit">
+                        🚶 徒歩{distanceToWalkingTime(
                           calculateDistance(
                             userLocation.latitude,
                             userLocation.longitude,
@@ -328,12 +316,12 @@ export function RestaurantList() {
                       </span>
                     )}
                     {restaurant.opening_hours?.open_now !== undefined && (
-                      <span className={`px-2 py-1 rounded text-xs ${
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold inline-block w-fit ${
                         restaurant.opening_hours.open_now
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-red-500 text-white'
                       }`}>
-                        {restaurant.opening_hours.open_now ? '営業中' : '営業時間外'}
+                        {restaurant.opening_hours.open_now ? '🔑 営業中' : '🔒 営業時間外'}
                       </span>
                     )}
                   </div>
@@ -347,10 +335,10 @@ export function RestaurantList() {
                       console.log('Is favorited:', favorites.has(restaurant.place_id))
                       toggleFavorite(restaurant.place_id)
                     }}
-                    className={`p-2 rounded-full transition-colors ${
+                    className={`p-3 rounded-full transition-colors ${
                       favorites.has(restaurant.place_id)
-                        ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-red-500 text-white hover:bg-red-600'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                     }`}
                   >
                     <Heart className={`h-4 w-4 ${favorites.has(restaurant.place_id) ? 'fill-current' : ''}`} />
@@ -364,23 +352,23 @@ export function RestaurantList() {
 
       {selectedRestaurant && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
+            <div className="p-8">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">{selectedRestaurant.name}</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedRestaurant.name}</h2>
                   <p className="text-gray-600">{selectedRestaurant.vicinity}</p>
                   {selectedRestaurant.rating && (
                     <div className="flex items-center mt-2 text-gray-900">
                       <Star className="h-4 w-4 text-yellow-500 mr-1" />
                       <span>{selectedRestaurant.rating.toFixed(1)}</span>
-                      <span className="ml-1 text-sm text-gray-400">(Google評価)</span>
+                      <span className="ml-2 text-sm bg-blue-600 text-white px-2 py-1 rounded-full font-medium">(Google評価)</span>
                     </div>
                   )}
                 </div>
                 <button
                   onClick={() => setSelectedRestaurant(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 text-3xl font-bold transition-colors"
                 >
                   ×
                 </button>
