@@ -194,7 +194,8 @@ export function MyPage() {
           ) : (
             <div className="grid gap-4">
               {favorites.map((favorite) => {
-                const restaurant = favorite.restaurants[0] // Take first restaurant from array
+                const restaurant = favorite.restaurants?.[0]
+                if (!restaurant) return null
                 return (
                   <div key={favorite.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start">
@@ -235,6 +236,7 @@ export function MyPage() {
             <div className="grid gap-4">
               {reviews.map((review) => {
                 const restaurant = review.restaurants
+                if (!restaurant) return null
                 return (
                   <div key={review.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-3">
