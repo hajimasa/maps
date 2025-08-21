@@ -11,10 +11,7 @@ interface Review {
   created_at: string
   user_id: string
   users?: {
-    user_profiles?: {
-      display_name: string | null
-      avatar_url: string | null
-    }
+    display_name: string | null
   }
 }
 
@@ -43,7 +40,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
         return
       }
 
-      // Since users.id and user_profiles.id are the same, we can use user_id directly
+      // Fetch user display_name only (no avatar)
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -53,10 +50,7 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
           created_at,
           user_id,
           users!user_id (
-            user_profiles (
-              display_name,
-              avatar_url
-            )
+            display_name
           )
         `)
         .eq('restaurant_id', restaurant.id)
@@ -119,26 +113,18 @@ export function ReviewList({ restaurantId, refreshTrigger }: ReviewListProps) {
       <h3 className="text-lg font-semibold">レビュー ({reviews.length})</h3>
       {reviews.map((review) => (
         <div key={review.id} className="p-4 bg-white rounded-lg border">
-          <div className="flex items-center gap-3 mb-3">
-            {review.users?.user_profiles?.avatar_url ? (
-              <img
-                src={review.users.user_profiles.avatar_url}
-                alt="User avatar"
-                className="w-8 h-8 rounded-full"
-              />
-            ) : (
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                 <span className="text-sm font-medium text-gray-600">U</span>
               </div>
-            )}
-            <div>
               <p className="font-medium">
-                {review.users?.user_profiles?.display_name || '匿名ユーザー'}
-              </p>
-              <p className="text-sm text-gray-500">
-                {formatDate(review.created_at)}
+                {review.users?.display_name || '匿名ユーザー'}
               </p>
             </div>
+            <p className="text-sm text-gray-500">
+              {formatDate(review.created_at)}
+            </p>
           </div>
 
           <div className="flex gap-1 mb-3">
