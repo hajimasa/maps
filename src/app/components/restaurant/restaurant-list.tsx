@@ -39,11 +39,13 @@ export function RestaurantList() {
     try {
       const { data, error } = await supabase
         .from('favorites')
-        .select('restaurant_id')
+        .select(`
+          restaurants!inner(google_place_id)
+        `)
         .eq('user_id', user.id)
 
       if (error) throw error
-      setFavorites(new Set(data.map(fav => fav.restaurant_id)))
+      setFavorites(new Set(data.map((fav: any) => fav.restaurants.google_place_id)))
     } catch (error) {
       console.error('Error loading favorites:', error)
     }
@@ -76,11 +78,23 @@ export function RestaurantList() {
       if (!restaurant) return
 
       if (favorites.has(placeId)) {
+        // Get restaurant id first
+        const { data: restaurantRecord, error: findRestaurantError } = await supabase
+          .from('restaurants')
+          .select('id')
+          .eq('google_place_id', placeId)
+          .single()
+
+        if (findRestaurantError) {
+          console.error('Error finding restaurant for deletion:', findRestaurantError)
+          throw findRestaurantError
+        }
+
         const { error } = await supabase
           .from('favorites')
           .delete()
           .eq('user_id', user.id)
-          .eq('restaurant_id', placeId)
+          .eq('restaurant_id', restaurantRecord.id)
 
         if (error) throw error
         setFavorites(prev => {
@@ -99,11 +113,23 @@ export function RestaurantList() {
 
         if (insertRestaurantError) throw insertRestaurantError
 
+        // Get the inserted restaurant id
+        const { data: insertedRestaurant, error: checkRestaurantError } = await supabase
+          .from('restaurants')
+          .select('id')
+          .eq('google_place_id', placeId)
+          .single()
+
+        if (checkRestaurantError) {
+          console.error('Error finding restaurant after upsert:', checkRestaurantError)
+          throw checkRestaurantError
+        }
+
         const { error: insertFavoriteError } = await supabase
           .from('favorites')
           .insert({
             user_id: user.id,
-            restaurant_id: placeId,
+            restaurant_id: insertedRestaurant.id,
             created_at: new Date().toISOString()
           })
 
@@ -112,7 +138,13 @@ export function RestaurantList() {
       }
     } catch (error) {
       console.error('Error toggling favorite:', error)
-      alert('お気に入りの更新中にエラーが発生しました。')
+      console.error('Error details:', {
+        placeId,
+        userId: user?.id,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorDetails: error
+      })
+      alert(`お気に入りの更新中にエラーが発生しました。\n詳細: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
