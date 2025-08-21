@@ -20,6 +20,10 @@ export interface GooglePlaceRestaurant {
   }>
   formatted_phone_number?: string
   website?: string
+  opening_hours?: {
+    open_now?: boolean
+    weekday_text?: string[]
+  }
 }
 
 export interface GooglePlacesResponse {
@@ -67,7 +71,7 @@ export async function getPlaceDetails(placeId: string): Promise<GooglePlaceResta
   url.searchParams.set('place_id', placeId)
   url.searchParams.set('key', GOOGLE_MAPS_API_KEY)
   url.searchParams.set('language', 'ja')
-  url.searchParams.set('fields', 'place_id,name,vicinity,geometry,types,rating,price_level,photos,formatted_phone_number,website')
+  url.searchParams.set('fields', 'place_id,name,vicinity,geometry,types,rating,price_level,photos,formatted_phone_number,website,opening_hours')
 
   try {
     const response = await fetch(url.toString())

@@ -248,10 +248,17 @@ export function RestaurantList() {
                       <div className="flex items-center">
                         <Star className="h-4 w-4 text-yellow-500 mr-1" />
                         <span>{restaurant.rating.toFixed(1)}</span>
+                        <span className="ml-1 text-xs text-gray-400">(Google)</span>
                       </div>
                     )}
-                    {restaurant.price_level && (
-                      <span>価格帯: {'¥'.repeat(restaurant.price_level)}</span>
+                    {restaurant.opening_hours?.open_now !== undefined && (
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        restaurant.opening_hours.open_now
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {restaurant.opening_hours.open_now ? '営業中' : '営業時間外'}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -291,6 +298,7 @@ export function RestaurantList() {
                     <div className="flex items-center mt-2 text-gray-900">
                       <Star className="h-4 w-4 text-yellow-500 mr-1" />
                       <span>{selectedRestaurant.rating.toFixed(1)}</span>
+                      <span className="ml-1 text-sm text-gray-400">(Google評価)</span>
                     </div>
                   )}
                 </div>
