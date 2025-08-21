@@ -99,6 +99,20 @@ export function RestaurantList() {
     }
   }, [loadRestaurants])
 
+  const openDirections = (restaurant: GooglePlaceRestaurant) => {
+    if (userLocation) {
+      const origin = `${userLocation.latitude},${userLocation.longitude}`
+      const destination = `${restaurant.geometry.location.lat},${restaurant.geometry.location.lng}`
+      const googleMapsUrl = `https://www.google.com/maps/dir/${origin}/${destination}`
+      window.open(googleMapsUrl, '_blank')
+    } else {
+      // 現在地が取得できない場合は目的地のみ表示
+      const destination = `${restaurant.geometry.location.lat},${restaurant.geometry.location.lng}`
+      const googleMapsUrl = `https://www.google.com/maps/place/${destination}`
+      window.open(googleMapsUrl, '_blank')
+    }
+  }
+
   const toggleFavorite = async (placeId: string) => {
     if (!user) {
       alert('お気に入りに追加するにはログインが必要です。')
@@ -293,7 +307,16 @@ export function RestaurantList() {
                 <div className="flex-1">
                   <h3 className="font-bold text-xl text-gray-900 mb-1">{restaurant.name}</h3>
                   {restaurant.vicinity && (
-                    <p className="text-gray-600 text-sm mt-1">{restaurant.vicinity}</p>
+                    <p 
+                      className="text-blue-600 hover:text-blue-800 text-sm mt-1 cursor-pointer hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openDirections(restaurant)
+                      }}
+                      title="Googleマップで経路を表示"
+                    >
+                      📍 {restaurant.vicinity}
+                    </p>
                   )}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-sm text-gray-500">
                     {restaurant.rating && (
