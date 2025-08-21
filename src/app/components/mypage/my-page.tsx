@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { Star, Heart, MapPin } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
-import type { GooglePlaceRestaurant } from '@/app/lib/google-maps'
 
 interface FavoriteRestaurant {
   id: string
@@ -17,7 +16,7 @@ interface FavoriteRestaurant {
     category: string
     price_range: number | null
     google_place_id: string
-  }
+  }[]
 }
 
 interface ReviewedRestaurant {
@@ -34,7 +33,7 @@ interface ReviewedRestaurant {
     category: string
     price_range: number | null
     google_place_id: string
-  }
+  }[]
 }
 
 export function MyPage() {
@@ -194,28 +193,31 @@ export function MyPage() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {favorites.map((favorite) => (
-                <div key={favorite.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-lg">{favorite.restaurants.name}</h3>
-                      {favorite.restaurants.address && (
-                        <p className="text-gray-600 text-sm mt-1 flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {favorite.restaurants.address}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                        <span>カテゴリ: {favorite.restaurants.category}</span>
-                        {favorite.restaurants.price_range && (
-                          <span>価格帯: {'¥'.repeat(favorite.restaurants.price_range)}</span>
+              {favorites.map((favorite) => {
+                const restaurant = favorite.restaurants[0] // Take first restaurant from array
+                return (
+                  <div key={favorite.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-lg">{restaurant.name}</h3>
+                        {restaurant.address && (
+                          <p className="text-gray-600 text-sm mt-1 flex items-center">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {restaurant.address}
+                          </p>
                         )}
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                          <span>カテゴリ: {restaurant.category}</span>
+                          {restaurant.price_range && (
+                            <span>価格帯: {'¥'.repeat(restaurant.price_range)}</span>
+                          )}
+                        </div>
                       </div>
+                      <Heart className="h-5 w-5 text-red-500 fill-current" />
                     </div>
-                    <Heart className="h-5 w-5 text-red-500 fill-current" />
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
@@ -231,42 +233,45 @@ export function MyPage() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {reviews.map((review) => (
-                <div key={review.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-lg">{review.restaurants.name}</h3>
-                      {review.restaurants.address && (
-                        <p className="text-gray-600 text-sm mt-1 flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {review.restaurants.address}
-                        </p>
-                      )}
+              {reviews.map((review) => {
+                const restaurant = review.restaurants[0] // Take first restaurant from array
+                return (
+                  <div key={review.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-lg">{restaurant.name}</h3>
+                        {restaurant.address && (
+                          <p className="text-gray-600 text-sm mt-1 flex items-center">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {restaurant.address}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {formatDate(review.created_at)}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {formatDate(review.created_at)}
+                    
+                    <div className="flex gap-1 mb-3">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          size={16}
+                          className={
+                            star <= review.rating
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }
+                        />
+                      ))}
                     </div>
+                    
+                    {review.comment && (
+                      <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                    )}
                   </div>
-                  
-                  <div className="flex gap-1 mb-3">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        size={16}
-                        className={
-                          star <= review.rating
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }
-                      />
-                    ))}
-                  </div>
-                  
-                  {review.comment && (
-                    <p className="text-gray-700 leading-relaxed">{review.comment}</p>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
