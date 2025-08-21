@@ -1,103 +1,91 @@
-import Image from "next/image";
+'use client'
+
+import { LoginButton } from './components/auth/login-button'
+import { SaveRestaurant } from './components/restaurant/save-restaurant'
+import { ReviewForm } from './components/restaurant/review-form'
+import { ReviewList } from './components/restaurant/review-list'
+import { RestaurantList } from './components/restaurant/restaurant-list'
+import { useState } from 'react'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const demoRestaurant = {
+    name: "サンプルレストラン",
+    address: "東京都渋谷区1-1-1",
+    latitude: 35.6762,
+    longitude: 139.6503,
+    category: "和食",
+    price_range: 3,
+    phone: "03-1234-5678",
+    website: "https://example.com",
+    google_place_id: "demo_place_123"
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-gray-900">
+            オフィス周辺レストランマップ
+          </h1>
+          <LoginButton />
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="space-y-8">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <RestaurantList />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h2 className="text-lg font-semibold mb-4">店舗情報（デモ）</h2>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium text-lg">{demoRestaurant.name}</h3>
+                    <p className="text-gray-600">{demoRestaurant.address}</p>
+                    <p className="text-sm text-gray-500">カテゴリ: {demoRestaurant.category}</p>
+                    <p className="text-sm text-gray-500">
+                      価格帯: {'¥'.repeat(demoRestaurant.price_range)}
+                    </p>
+                  </div>
+                  <SaveRestaurant restaurant={demoRestaurant} />
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <ReviewForm
+                  restaurantId="demo_restaurant_id"
+                  onReviewSubmitted={() => setReviewRefreshTrigger(prev => prev + 1)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <ReviewList
+                  restaurantId="demo_restaurant_id"
+                  refreshTrigger={reviewRefreshTrigger}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 bg-blue-50 rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-2">機能説明</h2>
+          <ul className="space-y-2 text-sm text-gray-700">
+            <li>• 「現在地から探す」ボタンで位置情報を取得し、近い順にレストランを表示できます</li>
+            <li>• Googleアカウントでログインして店舗を保存できます</li>
+            <li>• お気に入りの店舗にレビューを投稿できます</li>
+            <li>• 他のユーザーのレビューを確認できます</li>
+            <li>• 実際の運用時には Google Maps API と連携して店舗検索が可能になります</li>
+          </ul>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
-  );
+  )
 }
